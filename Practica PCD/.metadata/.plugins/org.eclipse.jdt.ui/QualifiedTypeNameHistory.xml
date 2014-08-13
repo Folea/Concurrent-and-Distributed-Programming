@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="messagepassing.CommunicationScheme"/>
+<fullyQualifiedTypeName name="messagepassing.Selector"/>
+<fullyQualifiedTypeName name="messagepassing.Channel"/>
+<fullyQualifiedTypeName name="messagepassing.RemoteServer"/>
+<fullyQualifiedTypeName name="java.lang.Runnable"/>
+<fullyQualifiedTypeName name="messagepassing.RemoteServerException"/>
+<fullyQualifiedTypeName name="messagepassing.EntryPoint"/>
+<fullyQualifiedTypeName name="java.util.Random"/>
+<fullyQualifiedTypeName name="coches.Coche"/>
+<fullyQualifiedTypeName name="guardia_peatones_canales.Via"/>
+<fullyQualifiedTypeName name="java.lang.Thread"/>
+<fullyQualifiedTypeName name="guardia_peatones_canales.Peaton"/>
+<fullyQualifiedTypeName name="guardia_peatones_canales.Guardia"/>
+<fullyQualifiedTypeName name="java.util.concurrent.Semaphore"/>
+<fullyQualifiedTypeName name="java.awt.font.NumericShaper"/>
+<fullyQualifiedTypeName name="java.util.concurrent.locks.ReentrantLock"/>
+<fullyQualifiedTypeName name="java.util.concurrent.locks.Condition"/>
+<fullyQualifiedTypeName name="guardia_peatones_coches.Guardia"/>
+<fullyQualifiedTypeName name="java.lang.InterruptedException"/>
+</qualifiedTypeNameHistroy>

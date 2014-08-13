@@ -1,0 +1,23 @@
+#Mon Jul 07 11:02:13 CEST 2014
+content_assist_proposals_foreground=0,0,0
+spelling_locale_initialized=true
+content_assist_disabled_computers=org.eclipse.jdt.ui.javaAllProposalCategory\u0000org.eclipse.jdt.ui.javaNoTypeProposalCategory\u0000org.eclipse.jdt.ui.textProposalCategory\u0000org.eclipse.jdt.ui.javaTypeProposalCategory\u0000
+command=C\:\\Program Files\\Java\\jdk1.7.0_60\\bin\\javadoc.exe
+org.eclipse.jdt.ui.text.templates_migrated=true
+useAnnotationsPrefPage=true
+eclipse.preferences.version=1
+org.eclipse.jface.textfont=1|Courier New|10.0|0|WINDOWS|1|0|0|0|0|0|0|0|0|1|0|0|0|0|Courier New;
+tabWidthPropagated=true
+org.eclipse.jdt.ui.editor.tab.width=
+fontPropagated=true
+org.eclipse.jdt.ui.text.custom_code_templates=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><templates/>
+org.eclipse.jdt.ui.javadoclocations.migrated=true
+proposalOrderMigrated=true
+content_assist_proposals_background=255,255,255
+org.eclipse.jdt.ui.formatterprofiles.version=12
+org.eclipse.jdt.internal.ui.navigator.layout=2
+content_assist_number_of_computers=22
+useQuickDiffPrefPage=true
+org.eclipse.jdt.ui.text.custom_templates=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><templates/>
+content_assist_lru_history=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><history maxLHS\="100" maxRHS\="10"><lhs name\="java.lang.Exception"><rhs name\="messagepassing.RemoteServerException"/><rhs name\="java.lang.InterruptedException"/></lhs><lhs name\="java.lang.Throwable"><rhs name\="messagepassing.RemoteServerException"/><rhs name\="java.lang.InterruptedException"/></lhs><lhs name\="java.lang.InterruptedException"><rhs name\="java.lang.InterruptedException"/></lhs><lhs name\="messagepassing.Selector"><rhs name\="messagepassing.Selector"/></lhs><lhs name\="messagepassing.CommunicationScheme"><rhs name\="messagepassing.Channel"/></lhs><lhs name\="messagepassing.Selectable"><rhs name\="messagepassing.Channel"/><rhs name\="messagepassing.EntryPoint"/></lhs><lhs name\="messagepassing.Channel"><rhs name\="messagepassing.Channel"/></lhs><lhs name\="java.lang.Runnable"><rhs name\="guardia_peatones_canales.Guardia"/><rhs name\="guardia_peatones_canales.Peaton"/><rhs name\="java.lang.Thread"/><rhs name\="coches.Coche"/></lhs><lhs name\="guardia_peatones_canales.Guardia"><rhs name\="guardia_peatones_canales.Guardia"/></lhs><lhs name\="guardia_peatones_canales.Peaton"><rhs name\="guardia_peatones_canales.Peaton"/></lhs><lhs name\="java.lang.Thread"><rhs name\="java.lang.Thread"/></lhs><lhs name\="messagepassing.RemoteServerException"><rhs name\="messagepassing.RemoteServerException"/></lhs><lhs name\="messagepassing.EntryPoint"><rhs name\="messagepassing.EntryPoint"/></lhs><lhs name\="java.lang.Enum"><rhs name\="guardia_peatones_canales.Via"/></lhs><lhs name\="guardia_peatones_canales.Via"><rhs name\="guardia_peatones_canales.Via"/></lhs></history>
+org.eclipse.jdt.ui.text.code_templates_migrated=true

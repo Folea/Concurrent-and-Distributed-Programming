@@ -1,0 +1,132 @@
+package guardia_peatones_coches;
+
+import messagepassing.*;
+
+/**
+ * Clase que representa un peaton.
+ * @author Folea Ilie Cristian
+ *
+ */
+public class Peaton implements Runnable{
+	private final CommunicationScheme canal;
+	private final int marcaje;
+	private static int numeroPeatones;
+	private int id;
+	
+	/**
+	 * Constructor de la clase peaton.
+	 * @param canal El canal por el que el peaton pide acceso al marcaje.
+	 * @param marcaje Marcaje por el que va a pasar el peaton.
+	 */
+	public Peaton (CommunicationScheme canal, int marcaje){
+		this.canal = canal;
+		this.marcaje =  marcaje;
+		numeroPeatones++;
+		id = numeroPeatones;
+	}
+	
+	/**
+	 * Metodo que se utiliza para que, cuando un peaton cruce una via, indique al constructor que ya ha cruzado 
+	 * y decremente el numero de peatones cruzando. Este metodo debe ejecutarse en exclusión mutua y lo hace utilizando
+	 * semaforos.
+	 */
+	public void decrementar(){
+		try{ 
+			Guardia.mutex.acquire();
+		} catch (InterruptedException e){} 
+		Guardia.decrementarPeatonesCruzando();
+		Guardia.mutex.release();
+	}
+	
+	/**
+	 * Este metodo imprime por pantalla, en exclusion mutua utilizando monitores, que que un peaton ha 
+	 * pedido permiso para cruzar una via.
+	 * @throws InterruptedException
+	 */
+	private void imprimirPeticionPeaton() throws InterruptedException{
+		Guardia.cerrojo.lock();
+		try{
+			while(Guardia.escribiendoPantalla){
+				Guardia.escribirPantalla.await();
+			}
+				Guardia.escribiendoPantalla = true;
+				System.out.println("El peaton " + id + " pide permiso para cruzar por el marcaje " + marcaje);
+				Guardia.escribiendoPantalla = false;
+				Guardia.escribirPantalla.signal();
+			}finally{
+				Guardia.cerrojo.unlock();
+			}
+	}	
+	
+	/**
+	 * Este metodo imprime por pantalla que un peaton ha empezado a cruzar la via. Lo hace mediante exclusión mutua
+	 * utilizando monitores.
+	 * @throws InterruptedException En el caso de que no se puede utilizar el monitor devuelve la excepción.
+	 */
+	private void imprimirEntradaPeaton() throws InterruptedException{
+		Guardia.cerrojo.lock();
+		try{
+			while(Guardia.escribiendoPantalla){
+				Guardia.escribirPantalla.await();
+			}
+				Guardia.escribiendoPantalla = true;
+				System.out.println("El peaton " + id + " entra a cruzar el marcaje " + marcaje);
+				Guardia.escribiendoPantalla = false;
+				Guardia.escribirPantalla.signal();
+			}finally{
+				Guardia.cerrojo.unlock();
+			}
+	}
+	
+	/**
+	 * Este metodo imprime por pantalla que un peaton ha cruzado la via. Lo hace mediante exclusión mutua
+	 * utilizando monitores.
+	 * @throws InterruptedException En el caso de que no se puede utilizar el monitor devuelve la excepción.
+	 */
+	private void imprimirSalidaPeaton() throws InterruptedException{
+		Guardia.cerrojo.lock();
+		try{
+			while(Guardia.escribiendoPantalla){
+				Guardia.escribirPantalla.await();
+			}
+				Guardia.escribiendoPantalla = true;
+				System.out.println("El peaton " + id + " ha cruzado el marcaje " + marcaje);
+				Guardia.escribiendoPantalla = false;
+				Guardia.escribirPantalla.signal();
+			}finally{
+				Guardia.cerrojo.unlock();
+			}
+	}
+	
+	@Override
+	public void run() {
+		while(true){
+			// Pide acceso a la via
+			try{
+				imprimirPeticionPeaton();
+			} catch (InterruptedException e){
+			}
+
+			canal.send(marcaje);
+			
+			try{
+				imprimirEntradaPeaton();
+			} catch (InterruptedException e){	
+			}
+			
+			// Peaton cruza la calle
+			try{
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			// Sale de la via
+			decrementar();
+			try{
+				imprimirSalidaPeaton();
+			} catch (InterruptedException e){
+				
+			}
+		}
+	}
+}

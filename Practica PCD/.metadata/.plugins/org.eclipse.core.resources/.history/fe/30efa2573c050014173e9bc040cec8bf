@@ -1,0 +1,258 @@
+package guardia_peatones_coches;
+
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+import messagepassing.Channel;
+import messagepassing.EntryPoint;
+import messagepassing.RemoteServer;
+import messagepassing.Selector;
+
+/**
+ * Clase que simula el funcionamiento del guardia que gestiona el paso de coches y peatones.
+ * @author Folea Ilie Cristian
+ *
+ */
+public class Guardia extends RemoteServer implements Runnable{
+	private Via viaActiva; // Para indicar la via activa
+	private Selector s = null; // Para el select
+	private final static int C = 3; // numero maximo de coches que pueden pasar una vez que ha llegado un coche por la via contraria.
+	private int cochesRestantes; // numero de coches que han cruzado la via una vez que han llegado coches por la via que no esta activa.
+	private boolean cochesEsperando; // boolean para indicar que hay coches del otro carril esperando un cambio de via
+	private boolean pasarPeatones; // boolean para permitir o no el paso de los peatones.
+	private static int peatonesCruzando; // controlar el nº de peatones cruzando
+	private Channel peatones[]; // canales de los peatones
+	private int cochesCruzando; // numero de coches que estan cruzando actualmente.
+	private EntryPoint peticionEntrarA, peticionEntrarB, entrarA, entrarB, salirA, salirB;
+	public static Semaphore mutex = new Semaphore(1); // Semaforo para gestionar el cruce de los marcajes
+	public static ReentrantLock monitor = new ReentrantLock(); //Monitor para gestionar la impresión en pantalla
+	public static Condition escribirPantalla = monitor.newCondition(); //Condicion del monitor
+	public static boolean escribiendoPantalla; //indica si se esta escribiendo o no en la pantalla
+	
+	/**
+	 * Constructor de la clase guardia.
+	 * @param peatones Los canales por los que se va a recibir la petición de los peatones.
+	 */
+	public Guardia(Channel peatones[]){
+		viaActiva = Via.viaAleatoria();
+		cochesEsperando = false;
+		pasarPeatones = true;
+		peatonesCruzando = 0;
+		escribiendoPantalla = false;
+		
+		peticionEntrarA = new EntryPoint("peticionEntrarA");
+		peticionEntrarB = new EntryPoint("peticionEntrarB");
+		entrarA = new EntryPoint("entrarA");
+		entrarB =  new EntryPoint("entrarB");
+		salirA = new EntryPoint("salirA");
+		salirB = new EntryPoint("salirB");
+		
+		registerEntryPoint(peticionEntrarA);
+		registerEntryPoint(peticionEntrarB);
+		registerEntryPoint(entrarA);
+		registerEntryPoint(entrarB);
+		registerEntryPoint(salirA);
+		registerEntryPoint(salirB);
+		this.peatones = peatones;
+		
+		try{
+			imprimirViaActiva();
+		}catch (InterruptedException e) {
+		}
+		
+	}
+	
+	/**
+	 * Metodo que, utilizando la exclusion mutua mediante monitores, imprime en panntalla el cambio de via.
+	 * @throws InterruptedException En el caso de que no se puede utilizar el monitor devuelve la excepción.
+	 */
+	private void imprimirCambioVia() throws InterruptedException{
+		Guardia.monitor.lock();
+		try{
+			while(Guardia.escribiendoPantalla){
+				Guardia.escribirPantalla.await();
+			}
+			Guardia.escribiendoPantalla = true;
+			System.out.println("El numero de coches cruzando al cambiar la via es " + cochesCruzando);
+			System.out.println("Cambio de vía, la via activa es " + viaActiva);
+			Guardia.escribiendoPantalla = false;
+			Guardia.escribirPantalla.signal();
+			}finally{
+				Guardia.monitor.unlock();
+			}
+	}
+	
+	/**
+	 * Metodo que, utilizando exclusion mutua mediante monitores, imprime en pantalla la via activa.
+	 * @throws InterruptedException En el caso de que no se puede utilizar el monitor devuelve la excepción.
+	 */
+	private void imprimirViaActiva() throws InterruptedException{
+		Guardia.monitor.lock();
+		try{
+			while(Guardia.escribiendoPantalla){
+				Guardia.escribirPantalla.await();
+			}
+			Guardia.escribiendoPantalla = true;
+			System.out.println("La via activa es " + viaActiva);
+			Guardia.escribiendoPantalla = false;
+			Guardia.escribirPantalla.signal();
+			}finally{
+				Guardia.monitor.unlock();
+			}
+	}
+	
+	/**
+	 * Metodo que, utilizando exlcusion mutua mediante monitores, imprime en pantalla el numero de peatones que 
+	 * hay cruzando en los marcajes que no estan en la via activa.
+	 * @throws InterruptedException En el caso de que no se puede utilizar el monitor devuelve la excepción.
+	 */
+	private static void imprimirPeatonesCruzando() throws InterruptedException{
+		Guardia.monitor.lock();
+		try{
+			while(Guardia.escribiendoPantalla){
+				Guardia.escribirPantalla.await();
+			}
+			Guardia.escribiendoPantalla = true;
+			System.out.println("El numero de peatones que estan cruzando alguno de los dos marcajes es " + peatonesCruzando);
+			Guardia.escribiendoPantalla = false;
+			Guardia.escribirPantalla.signal();
+			}finally{
+				Guardia.monitor.unlock();
+			}
+	}
+	
+	/**
+	 * Metodo que se utiliza para cambiar la via.
+	 */
+	private void cambioVia(){
+		if(viaActiva == Via.A) {
+			viaActiva = Via.B;
+			cochesEsperando = false;
+			cochesRestantes = 0;
+			pasarPeatones = true;
+		}
+		else {
+			viaActiva = Via.A;
+			cochesEsperando = false;
+			cochesRestantes = 0;
+			pasarPeatones = true;
+		}
+		try{
+			imprimirCambioVia();
+		} catch (InterruptedException e){
+		}
+	}
+	
+	/**
+	 * Metodo que se utiliza para decrementar el numero de peatones que estan cruzando. Es un metodo estatico par que lo puedan utilizar
+	 * clases ajenas sin tener ninguna instancia de esta clase.
+	 */
+	public static void decrementarPeatonesCruzando(){
+		peatonesCruzando--;
+		try{
+			imprimirPeatonesCruzando();
+		} catch (InterruptedException e){
+		}
+	}
+	
+	@Override
+	public void run() {
+		try{
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		// Creamos el selector y añadimos las posibles selecciones.
+		s = new Selector();
+		for(int i = 0; i < peatones.length; i++){
+			s.addSelectable(peatones[i], false);
+		}
+		s.addSelectable(peticionEntrarA, false);
+		s.addSelectable(peticionEntrarB, false);
+		s.addSelectable(entrarA, false);
+		s.addSelectable(entrarB, false);
+		s.addSelectable(salirA, false);
+		s.addSelectable(salirB, false);
+		
+		while(true){
+		// Añadimos las condiciones de seleccion
+			for(int i = 0; i < peatones.length; i++){
+				if(i < 3){ 
+					peatones[i].setGuardValue(viaActiva == Via.A && pasarPeatones);
+				}
+				else if(i > 2 && i < 5){
+					peatones[i].setGuardValue(viaActiva == Via.B && pasarPeatones);
+				}
+				else if(i > 4 && i < 9){
+					peatones[i].setGuardValue(viaActiva == Via.A && pasarPeatones);
+				}
+				else if(i > 8){
+					peatones[i].setGuardValue(viaActiva == Via.B && pasarPeatones);
+				}
+			}
+			entrarA.setGuardValue(viaActiva == Via.A && cochesRestantes < C);
+			entrarB.setGuardValue(viaActiva == Via.B && cochesRestantes < C);
+			
+			int select = s.selectOrBlock();
+			
+			if(select < 12){
+				peatones[select-1].receive();
+				peatonesCruzando++;
+			}
+			
+			else{
+				switch(s.selectOrBlock()){
+					case 12: // peticion entrar A
+						peticionEntrarA.accept();
+						if(viaActiva != Via.A){
+							cochesEsperando = true;
+							pasarPeatones = false; // una vez que hay coches esperando por la otra vía no se deja pasar mas peatones
+						}
+						peticionEntrarA.replay(null);
+						break;
+					case 13: // petición entrar B
+						peticionEntrarB.accept();
+						if(viaActiva != Via.B){
+							cochesEsperando = true;
+							pasarPeatones = false;
+						}
+						peticionEntrarB.replay(null);
+						break;
+					case 14: // entrar A
+						entrarA.accept();
+						if(cochesEsperando){
+							cochesRestantes++;
+						}
+						cochesCruzando++;
+						entrarA.replay(null);
+						break;
+					case 15: // entrar B
+						entrarB.accept();
+						if(cochesEsperando){
+							cochesRestantes++;
+						}
+						cochesCruzando++;
+						entrarB.replay(null);
+						break;
+					case 16: // salir A
+						salirA.accept();
+						cochesCruzando--;
+						if(cochesEsperando && cochesCruzando == 0 && peatonesCruzando == 0){
+							cambioVia();
+						}
+						salirA.replay(null);
+						break;
+					case 17: // salir B
+						salirB.accept();
+						cochesCruzando--;
+						if(cochesEsperando && cochesCruzando == 0 && peatonesCruzando == 0){
+							cambioVia();
+						}
+						salirB.replay(null);
+						break;
+				}
+			}
+		}
+	}
+}
